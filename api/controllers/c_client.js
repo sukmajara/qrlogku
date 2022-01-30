@@ -52,7 +52,8 @@ exports.login = (req, res, next) => {
 };
 
 exports.generate = (req, res, next) => {
-    const generate = randomstring.generate() + '/' + ({clientInfo: req.body.clientInfo})
+    const clientInfo = ({clientInfo: req.body.clientInfo})
+    const generate = randomstring.generate() + '/' + clientInfo
     qrcode.toDataURL(generate)
         .then(result => {
             res.status(200).json({
