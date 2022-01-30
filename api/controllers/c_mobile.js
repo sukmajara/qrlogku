@@ -156,12 +156,12 @@ exports.history = (req, res, next) =>{
     AuthDB.find({id: decoded.id, clientId: req.params.clientId}, ('deviceId -_id'))
     .exec()
     .then(result => {
-        if(!result[0]){
-            ClientDB.update({ clientId: req.params.clientId }, {status: 'Not Active' }).exec()
-            return res.status(200).json({
-                message: "History is Empty."
-            });
-        }
+        // if(!result[0]){
+        //     ClientDB.update({ clientId: req.params.clientId }, {status: 'Not Active' }).exec()
+        //     return res.status(200).json({
+        //         message: "History is Empty."
+        //     });
+        // }
         res.status(200).json({
             message: result
         })
