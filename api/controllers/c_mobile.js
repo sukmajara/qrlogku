@@ -174,9 +174,10 @@ exports.history = (req, res, next) => {
         .then(result => {
             if (!result[0]) {
                 ClientDB.update({ clientId: req.params.clientId }, { status: 'Not Active' }).exec()
-                return res.status(200).json({
-                    message: "History is Empty."
-                });
+                return res.status(404)
+                // .json({
+                //     message: "History is Empty."
+                // });
             }
             res.status(200).json({
                 message: result
