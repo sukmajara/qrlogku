@@ -10,7 +10,7 @@ router.post('/register', ClientController.register);
 router.post('/login', ClientController.login);
 
 //generate qr
-router.post('/generate', ClientController.generate);
+router.get('/generate', ClientController.generate);
 
 //ask clientid manage session
 router.post('/session', ClientController.session );

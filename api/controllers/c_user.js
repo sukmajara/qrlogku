@@ -10,7 +10,7 @@ const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-
 
 exports.register = (req, res, next) => {
 
-    UserDB.find({ email: req.body.email })
+    UserDB.find({ email: req.body.email.toLowerCase() })
         .exec()
         .then(user => {
             if (user.length != 0) {
@@ -29,7 +29,7 @@ exports.register = (req, res, next) => {
                         const user = new UserDB({
                             _id: new mongoose.Types.ObjectId(),
                             name: req.body.name,
-                            email: req.body.email,
+                            email: req.body.email.toLowerCase(),
                             password: hash,
                             phoneNumber: req.body.phoneNumber
                         });
@@ -63,7 +63,7 @@ exports.register = (req, res, next) => {
 
 exports.login = (req, res, next) => {
 
-    UserDB.find({ email: req.body.email })
+    UserDB.find({ email: req.body.email.toLowerCase() })
         .exec()
         .then(user => {
             if (user.length < 1) {
@@ -84,7 +84,7 @@ exports.login = (req, res, next) => {
                         },
                         'secret',
                         {
-                            expiresIn: "24h"
+                            expiresIn: "15m"
                         }
                     );
                     return res.status(200).json({

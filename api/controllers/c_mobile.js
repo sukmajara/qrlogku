@@ -13,23 +13,40 @@ exports.register = (req, res, next) => {
             message: 'Forbidden.'
         });
     }
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.decode(token);
-    const client = new ClientDB({
-        _id: new mongoose.Types.ObjectId(),
-        auth: req.body.auth,
-        id: decoded.id,
-        clientInfo: req.body.auth.split("/")[1],
-        clientId: randomstring.generate(),
-        status: 'Not Active',
-        // loginDate: ' '
-    });
-    client
-        .save()
-        .then(result => {
-            res.status(200).json({
-                message: 'OK.',
+    ClientDB.find({ auth: req.body.auth })
+        .exec()
+        .then(validation => {
+            console.log(validation[0])
+            if (validation[0]) {
+                return res.status(409).json({
+                    message: 'Auth Has been Scan.'
+                })
+            }
+            const token = req.headers.authorization.split(" ")[1];
+            const decoded = jwt.decode(token);
+            const client = new ClientDB({
+                _id: new mongoose.Types.ObjectId(),
+                auth: req.body.auth,
+                id: decoded.id,
+                clientInfo: req.body.auth.split("/")[1],
+                clientId: randomstring.generate(),
+                status: 'Not Active',
+                register: 0
+                // loginDate: ' '
             });
+            client
+                .save()
+                .then(result => {
+                    res.status(200).json({
+                        message: 'OK.',
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+                    res.status(500).json({
+                        error: err
+                    });
+                });
         })
         .catch(err => {
             console.log(err);
@@ -51,7 +68,7 @@ exports.login = (req, res, next) => {
         });
     }
 
-    ClientDB.find({ clientId: req.body.clientId }).select('clientId -_id')
+    ClientDB.find({ clientId: req.body.clientId, id: decoded.id }).select('clientId -_id')
         .exec()
         .then(client => {
             if (!client[0]) {
@@ -72,7 +89,6 @@ exports.login = (req, res, next) => {
             auth
                 .save()
                 .then(result => {
-                    ClientDB.update({ clientId: req.body.clientId }, { status: 'Active' }).exec()  
                     res.status(200).json({
                         message: 'OK.',
                     });
@@ -91,7 +107,7 @@ exports.home = (req, res, next) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
 
-    ClientDB.find({ id: decoded.id }).select('clientInfo clientId status -_id')
+    ClientDB.find({ id: decoded.id, register: 1 }).select('clientInfo clientId status -_id')
         .exec()
         .then(result => {
             if (!result) {
@@ -133,7 +149,7 @@ exports.terminate = (req, res, next) => {
                             message: 'Not Found.'
                         });
                     }
-                    
+
                     res.status(200).json({
                         message: 'Session was deleted.'
                     })
@@ -148,30 +164,30 @@ exports.terminate = (req, res, next) => {
 
 }
 
-exports.history = (req, res, next) =>{
+exports.history = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
 
-    AuthDB.find({id: decoded.id, clientId: req.params.clientId}, ('deviceId -_id'))
-    .exec()
-    .then(result => {
-        // if(!result[0]){
-        //     ClientDB.update({ clientId: req.params.clientId }, {status: 'Not Active' }).exec()
-        //     return res.status(200).json({
-        //         message: "History is Empty."
-        //     });
-        // }
-        res.status(200).json({
-            message: result
+    AuthDB.find({ id: decoded.id, clientId: req.params.clientId }, ('deviceId -_id'))
+        .exec()
+        .then(result => {
+            if (!result[0]) {
+                ClientDB.update({ clientId: req.params.clientId }, { status: 'Not Active' }).exec()
+                return res.status(200).json({
+                    message: "History is Empty."
+                });
+            }
+            res.status(200).json({
+                message: result
+            })
         })
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            error: err
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
         });
-    });
 
 }
 

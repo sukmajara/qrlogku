@@ -7,7 +7,8 @@ const clientSchema = mongoose.Schema({
     clientInfo: { type: String, required: true },
     clientId: { type: String, required: true },
     // loginDate: { type: String },
-    status: { type: String }
+    status: { type: String },
+    register: { type: Number }
 });
 
 module.exports = mongoose.model('ClientDB', clientSchema);
