@@ -51,13 +51,19 @@ exports.register = (req, res, next) => {
                             .catch(err => {
                                 console.log(err);
                                 res.status(500).json({
-                                    error: err
+                                    error: "Internal Server Error."
                                 });
                             });
                     };
                 });
             }
         })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: "Internal Server Error."
+            });
+        });
 
 }
 
@@ -99,7 +105,7 @@ exports.login = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 
 }
@@ -146,7 +152,7 @@ exports.profile = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 
 }
@@ -172,7 +178,7 @@ exports.delete = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 
 }
@@ -219,7 +225,7 @@ exports.changeprofile = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 
 }
@@ -265,7 +271,7 @@ exports.changepassword = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 
 }

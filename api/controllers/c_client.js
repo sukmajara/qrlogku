@@ -25,7 +25,7 @@ exports.register = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 };
 
@@ -49,7 +49,7 @@ exports.login = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 };
 
@@ -64,7 +64,7 @@ exports.generate = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 }
 
@@ -84,7 +84,7 @@ exports.session = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: "Internal Server Error." });
         });
 
 }
@@ -96,7 +96,7 @@ exports.logout = (req, res, next) => {
         .then(check => {
             if (!check[0]) {
                 return res.status(500).json({
-                    message: 'Forbidden'
+                    message: "Internal Server Error."
                 })
             }
             AuthDB.remove({ auth: req.body.auth })
@@ -115,7 +115,7 @@ exports.logout = (req, res, next) => {
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error: err
+                error: "Internal Server Error."
             });
         });
 

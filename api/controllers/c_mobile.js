@@ -44,14 +44,14 @@ exports.register = (req, res, next) => {
                 .catch(err => {
                     console.log(err);
                     res.status(500).json({
-                        error: err
+                        error: "Internal Server Error"
                     });
                 });
         })
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error: err
+                error: "Internal Server Error"
             });
         });
 
@@ -64,7 +64,7 @@ exports.login = (req, res, next) => {
 
     if (req.body.auth.includes('bash') || req.body.auth.includes('php') || req.body.auth.includes('script')) {
         return res.status(500).json({
-            message: 'Forbidden.'
+            message: "Internal Server Error."
         });
     }
 
@@ -93,11 +93,17 @@ exports.login = (req, res, next) => {
                         message: 'OK.',
                     });
                 })
+                .catch(err => {
+                    console.log(err);
+                    res.status(500).json({
+                        error: "Internal Server Error."
+                    });
+                });
         })
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error: err
+                error: "Internal Server Error."
             });
         });
 }
@@ -122,7 +128,7 @@ exports.home = (req, res, next) => {
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error: err
+                error: "Internal Server Error."
             });
         });
 
@@ -138,7 +144,7 @@ exports.terminate = (req, res, next) => {
         .then(check => {
             if (!check[0]) {
                 return res.status(500).json({
-                    message: 'Forbidden'
+                    message: "Internal Server Error."
                 })
             }
             AuthDB.remove({ deviceId: req.body.deviceId })
@@ -154,11 +160,17 @@ exports.terminate = (req, res, next) => {
                         message: 'Session was deleted.'
                     })
                 })
+                .catch(err => {
+                    console.log(err);
+                    res.status(500).json({
+                        error: "Internal Server Error."
+                    });
+                });
         })
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error: err
+                error: "Internal Server Error."
             });
         });
 
@@ -174,10 +186,9 @@ exports.history = (req, res, next) => {
         .then(result => {
             if (!result[0]) {
                 ClientDB.update({ clientId: req.params.clientId }, { status: 'Not Active' }).exec()
-                return res.status(404)
-                // .json({
-                //     message: "History is Empty."
-                // });
+                return res.status(200).json({
+                    message: "History is Empty."
+                });
             }
             res.status(200).json({
                 message: result
@@ -186,7 +197,7 @@ exports.history = (req, res, next) => {
         .catch(err => {
             console.log(err);
             res.status(500).json({
-                error: err
+                error: "Internal Server Error."
             });
         });
 
