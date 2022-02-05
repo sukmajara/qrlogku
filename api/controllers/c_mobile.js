@@ -13,6 +13,17 @@ exports.register = (req, res, next) => {
             message: 'Forbidden.'
         });
     }
+
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.decode(token);
+
+    ClientDB.remove({id: decoded.id , register: 0}).exec()
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            error: "Internal Server Error"
+        });
+    });
     ClientDB.find({ auth: req.body.auth })
         .exec()
         .then(validation => {
@@ -22,8 +33,6 @@ exports.register = (req, res, next) => {
                     message: 'Auth Has been Scan.'
                 })
             }
-            const token = req.headers.authorization.split(" ")[1];
-            const decoded = jwt.decode(token);
             const client = new ClientDB({
                 _id: new mongoose.Types.ObjectId(),
                 auth: req.body.auth,
@@ -68,6 +77,14 @@ exports.login = (req, res, next) => {
         });
     }
 
+    AuthDB.remove({id: decoded.id, deviceId: ""}).exec()
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            error: "Internal Server Error"
+        });
+    });
+
     ClientDB.find({ clientId: req.body.clientId, id: decoded.id }).select('clientId -_id')
         .exec()
         .then(client => {
@@ -84,7 +101,7 @@ exports.login = (req, res, next) => {
                 id: decoded.id,
                 clientInfo: req.body.auth.split("/")[1],
                 clientId: req.body.clientId,
-                deviceId: randomstring.generate()
+                deviceId: ""
             });
             auth
                 .save()

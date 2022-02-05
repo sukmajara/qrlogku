@@ -113,6 +113,22 @@ exports.login = (req, res, next) => {
 exports.session = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.decode(token);
+
+    UserDB.find({id: decoded.id})
+    .exec()
+    .then(validation=>{
+        if(!validation[0]){
+            return res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({ error: "Internal Server Error." });
+    });
+
     if (token) {
         jwt.verify(token, 'secret', (error, result) => {
             if (result) {
