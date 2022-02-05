@@ -34,7 +34,8 @@ exports.login = (req, res, next) => {
         .exec()
         .then(result => {
             if (result[0] != null) {
-                ClientDB.update({ clientId: result[0].clientId }, { status: 'Active', deviceId: randomstring.generate() }).exec() 
+                ClientDB.update({ clientId: result[0].clientId }, { status: 'Active', }).exec() 
+                AuthDB.update({},{ deviceId: randomstring.generate() }).exec()
                 res.status(200).json({
                     message: "Found.",
                     id: result[0].id,
