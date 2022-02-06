@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { passwordStrength }  = require('check-password-strength')
 
 const UserDB = require('../models/users');
 
@@ -19,6 +20,19 @@ exports.register = (req, res, next) => {
                 });
             }
             else {
+                const userPasswordStrength = passwordStrength(req.body.password).value
+                console.log(userPasswordStrength)
+                if(userPasswordStrength=='Too weak'){
+                    return res.status(400).json({
+                        message: "Password Sangat lemah"
+                    })
+                }
+                if(userPasswordStrength=='Weak'){
+                    return res.status(400).json({
+                        message: "Password lemah"
+                    })
+                }
+
                 bcrypt.hash(req.body.password, 10, (err, hash) => {
                     if (err) {
                         return res.status(500).json({
@@ -38,14 +52,6 @@ exports.register = (req, res, next) => {
                             .then(result => {
                                 res.status(201).json({
                                     message: 'User telah dibuat.',
-                                    request: {
-                                        method: 'POST',
-                                        url: 'http://localhost:2030/user/login',
-                                        body: {
-                                            email: 'String',
-                                            password: 'String'
-                                        }
-                                    }
                                 });
                             })
                             .catch(err => {
@@ -114,6 +120,11 @@ exports.session = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
 
     UserDB.find({id: decoded.id})
     .exec()
@@ -157,6 +168,12 @@ exports.profile = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
+
     UserDB.find({ _id: decoded.id })
         .exec()
         .then(result => {
@@ -177,19 +194,17 @@ exports.delete = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
 
     UserDB.remove({ _id: decoded.id })
         .exec()
         .then(result => {
             res.status(200).json({
                 message: "Your Data has been deleted.",
-                request: {
-                    method: 'POST',
-                    url: 'http://localhost:2030/user/signup',
-                    body: {
-                        name: 'String', email: 'String', password: 'String', phoneNumber: 'Number'
-                    }
-                }
             });
         })
         .catch(err => {
@@ -203,6 +218,12 @@ exports.changeprofile = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
+
     const newUpdate = { name: req.body.name, email: req.body.email, phoneNumber: req.body.phoneNumber };
 
     UserDB.find({ _id: decoded.id })
@@ -250,6 +271,11 @@ exports.changepassword = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
 
     UserDB.find({ _id: decoded.id })
         .exec()

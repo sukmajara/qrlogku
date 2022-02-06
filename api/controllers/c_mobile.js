@@ -16,6 +16,11 @@ exports.register = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
 
     ClientDB.remove({id: decoded.id , register: 0}).exec()
     .catch(err => {
@@ -70,6 +75,11 @@ exports.login = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
 
     if (req.body.auth.includes('bash') || req.body.auth.includes('php') || req.body.auth.includes('script')) {
         return res.status(500).json({
@@ -129,6 +139,11 @@ exports.home = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
 
     ClientDB.find({ id: decoded.id, register: 1 }).select('clientInfo clientId status -_id')
         .exec()
@@ -155,6 +170,11 @@ exports.terminate = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
 
     AuthDB.find({ id: decoded.id, deviceId: req.body.deviceId })
         .exec()
@@ -197,6 +217,11 @@ exports.history = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
+    if(!token){
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
 
     AuthDB.find({ id: decoded.id, clientId: req.params.clientId }, ('deviceId -_id'))
         .exec()
