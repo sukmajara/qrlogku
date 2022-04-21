@@ -6,7 +6,7 @@ const AuthSchema = mongoose.Schema({
     id: { type: String, required: true },
     clientInfo: { type: String, required: true },
     clientId: { type: String, required: true },
-    deviceId: {type: String}
+    deviceId: { type: String }
 });
 
 module.exports = mongoose.model('AuthDB', AuthSchema);

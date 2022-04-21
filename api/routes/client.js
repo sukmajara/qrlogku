@@ -13,7 +13,7 @@ router.post('/login', ClientController.login);
 router.post('/generate', ClientController.generate);
 
 //ask clientid manage session
-router.post('/session', ClientController.session );
+router.post('/session', ClientController.session);
 
 //logout website
 router.delete('/terminate', ClientController.logout);

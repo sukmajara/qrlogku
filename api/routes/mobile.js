@@ -4,7 +4,7 @@ const router = express.Router();
 const MobileController = require('../controllers/c_mobile');
 
 //mobile scan register QR
-router.post('/register', MobileController.register );
+router.post('/register', MobileController.register);
 
 //mobile scan login qr
 router.post('/login', MobileController.login);
@@ -16,6 +16,6 @@ router.get('/home', MobileController.home);
 router.delete('/terminate', MobileController.terminate);
 
 // list history login on client website
-router.get('/history/:clientId' , MobileController.history);
+router.get('/history/:clientId', MobileController.history);
 
 module.exports = router;

@@ -10,25 +10,25 @@ exports.register = (req, res, next) => {
 
     if (req.body.auth.includes('bash') || req.body.auth.includes('php') || req.body.auth.includes('script')) {
         return res.status(500).json({
-            message: 'Forbidden.'
+            message: 'Internal Server Error.'
         });
     }
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
     }
 
-    ClientDB.remove({id: decoded.id , register: 0}).exec()
-    .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            error: "Internal Server Error"
+    ClientDB.remove({ id: decoded.id, register: 0 }).exec()
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: "Internal Server Error"
+            });
         });
-    });
     ClientDB.find({ auth: req.body.auth })
         .exec()
         .then(validation => {
@@ -75,7 +75,7 @@ exports.login = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
@@ -87,13 +87,13 @@ exports.login = (req, res, next) => {
         });
     }
 
-    AuthDB.remove({id: decoded.id, deviceId: ""}).exec()
-    .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            error: "Internal Server Error"
+    AuthDB.remove({ id: decoded.id, deviceId: "" }).exec()
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: "Internal Server Error"
+            });
         });
-    });
 
     ClientDB.find({ clientId: req.body.clientId, id: decoded.id }).select('clientId -_id')
         .exec()
@@ -139,7 +139,7 @@ exports.home = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
@@ -170,7 +170,7 @@ exports.terminate = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
@@ -217,7 +217,7 @@ exports.history = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
@@ -226,12 +226,12 @@ exports.history = (req, res, next) => {
     AuthDB.find({ id: decoded.id, clientId: req.params.clientId }, ('deviceId -_id'))
         .exec()
         .then(result => {
-             if (!result[0]) {
-                 ClientDB.update({ clientId: req.params.clientId }, { status: 'Not Active' }).exec()
-                 return res.status(200).json({
-                    //  message: "History is Empty."
-                 });
-             }
+            if (!result[0]) {
+                ClientDB.update({ clientId: req.params.clientId }, { status: 'Not Active' }).exec()
+                return res.status(200).json({
+                    //message: "History is Empty."
+                });
+            }
             res.status(200).json({
                 message: result
             })

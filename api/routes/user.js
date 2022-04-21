@@ -23,4 +23,13 @@ router.patch('/changeprofile', UserController.changeprofile);
 //change password
 router.patch('/changepassword', UserController.changepassword);
 
+//create PIN
+router.patch('/createpin', UserController.createPin);
+
+//validate PIN
+router.post('/validatepin', UserController.validatePin);
+
+//change PIN
+router.patch('/changepin', UserController.changePin);
+
 module.exports = router;

@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { passwordStrength }  = require('check-password-strength')
+const { passwordStrength } = require('check-password-strength')
 
 const UserDB = require('../models/users');
+const { db } = require('../models/users');
 
 // UserDB.find({}).select('email -_id')
 
@@ -21,13 +22,13 @@ exports.register = (req, res, next) => {
             }
             else {
                 const userPasswordStrength = passwordStrength(req.body.password).value
-                console.log(userPasswordStrength)
-                if(userPasswordStrength=='Too weak'){
+
+                if (userPasswordStrength == 'Too weak') {
                     return res.status(400).json({
                         message: "Password Sangat lemah"
                     })
                 }
-                if(userPasswordStrength=='Weak'){
+                if (userPasswordStrength == 'Weak') {
                     return res.status(400).json({
                         message: "Password lemah"
                     })
@@ -45,7 +46,8 @@ exports.register = (req, res, next) => {
                             name: req.body.name,
                             email: req.body.email.toLowerCase(),
                             password: hash,
-                            phoneNumber: req.body.phoneNumber
+                            phoneNumber: req.body.phoneNumber,
+                            userPin: ''
                         });
                         user
                             .save()
@@ -120,25 +122,25 @@ exports.session = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
     }
 
-    UserDB.find({id: decoded.id})
-    .exec()
-    .then(validation=>{
-        if(!validation[0]){
-            return res.status(401).json({
-                message: 'Unauthorized'
-            });
-        }
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).json({ error: "Internal Server Error." });
-    });
+    UserDB.find({ id: decoded.id })
+        .exec()
+        .then(validation => {
+            if (!validation[0]) {
+                return res.status(401).json({
+                    message: 'Unauthorized'
+                });
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({ error: "Internal Server Error." });
+        });
 
     if (token) {
         jwt.verify(token, 'secret', (error, result) => {
@@ -168,7 +170,7 @@ exports.profile = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
@@ -178,9 +180,9 @@ exports.profile = (req, res, next) => {
         .exec()
         .then(result => {
             res.status(200).json({
-                    email: result[0].email,
-                    name: result[0].name,
-                    phoneNumber: result[0].phoneNumber
+                email: result[0].email,
+                name: result[0].name,
+                phoneNumber: result[0].phoneNumber
             });
         })
         .catch(err => {
@@ -194,7 +196,7 @@ exports.delete = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
@@ -218,7 +220,7 @@ exports.changeprofile = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
@@ -271,7 +273,7 @@ exports.changepassword = (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.decode(token);
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             message: 'JWT Required.'
         })
@@ -317,3 +319,128 @@ exports.changepassword = (req, res, next) => {
         });
 
 }
+
+exports.createPin = (req, res, next) => {
+
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.decode(token);
+    if (!token) {
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
+
+    if (req.body.userPin.length != 6) {
+        return res.status(400).json({
+            message: 'Bad Request.'
+        })
+    }
+
+    UserDB.find({ _id: decoded.id, userPin: req.body.userPin })
+        .exec()
+        .then(validation => {
+            if (validation) {
+                return res.status(409).json({
+                    message: 'Youre already create PIN.'
+                });
+            }
+            UserDB.update({ _id: decoded.id }, { userPin: req.body.userPin })
+                .exec()
+                .then(updated => {
+                    res.status(200).json({
+                        message: 'Success.'
+                    });
+                })
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({ error: "Internal Server Error." });
+        });
+
+}
+
+exports.validatePin = (req, res, next) => {
+
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.decode(token);
+    if (!token) {
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
+
+    if (req.body.userPin.length != 6) {
+        return res.status(400).json({
+            message: 'Bad Request.'
+        })
+    }
+
+    UserDB.find({ _id: decoded.id, userPin: req.body.userPin })
+        .exec()
+        .then(result => {
+            if (!result[0]) {
+                return res.status(401).json({
+                    message: 'Wrong PIN.'
+                });
+            }
+            res.status(200).json({
+                message: 'Success.'
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({ error: "Internal Server Error." });
+        });
+}
+
+exports.changePin = (req, res, next) => {
+
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.decode(token);
+    if (!token) {
+        return res.status(401).json({
+            message: 'JWT Required.'
+        })
+    }
+
+    if (req.body.currentUserPin.length != 6) {
+        return res.status(400).json({
+            message: 'Bad Request.'
+        })
+    }
+
+    else if (req.body.newUserPin.length != 6) {
+        return res.status(400).json({
+            message: 'Bad Request.'
+        })
+    }
+
+    else if (req.body.currentUserPin == req.body.newUserPin) {
+        return res.status(400).json({
+            message: 'Your new PIN is same with your current PIN.'
+        })
+    }
+
+    UserDB.find({ _id: decoded.id, userPin: req.body.currentUserPin })
+        .exec()
+        .then(result => {
+            if (!result[0]) {
+                return res.status(401).json({
+                    message: 'Wrong PIN.'
+                });
+            }
+            UserDB.update({ _id: decoded.id }, { userPin: req.body.newUserPin })
+                .exec()
+                .then(updated => {
+                    res.status(200).json({
+                        message: 'Success.'
+                    });
+                })
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({ error: "Internal Server Error." });
+        });
+
+}
+
