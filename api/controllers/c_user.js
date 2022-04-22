@@ -21,6 +21,11 @@ exports.register = (req, res, next) => {
                     message: "Email sudah terdaftar."
                 });
             }
+            if (req.body.userPin.length != 6) {
+                return res.status(400).json({
+                    message: 'Bad Request.'
+                })
+            }
             else {
                 const userPasswordStrength = passwordStrength(req.body.password).value
 
@@ -48,9 +53,10 @@ exports.register = (req, res, next) => {
                             email: req.body.email.toLowerCase(),
                             password: hash,
                             phoneNumber: req.body.phoneNumber,
-                            userPin: '',
+                            userPin: req.body.userPin,
                             isVerified: false,
-                            emailToken: crypto.randomBytes(64).toString('hex')
+                            emailToken: crypto.randomBytes(64).toString('hex'),
+                            pinCorrect: false
                         });
                         user
                             .save()
@@ -151,6 +157,8 @@ exports.login = (req, res, next) => {
                             expiresIn: "15m"
                         }
                     );
+                    UserDB.update({ _id: user[0]._id }, { pinCorrect: false })
+                        .exec()
                     return res.status(200).json({
                         message: 'Found',
                         token: token
@@ -370,44 +378,44 @@ exports.changepassword = (req, res, next) => {
 
 }
 
-exports.createPin = (req, res, next) => {
+// exports.createPin = (req, res, next) => {
 
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.decode(token);
-    if (!token) {
-        return res.status(401).json({
-            message: 'JWT Required.'
-        })
-    }
+//     const token = req.headers.authorization.split(" ")[1];
+//     const decoded = jwt.decode(token);
+//     if (!token) {
+//         return res.status(401).json({
+//             message: 'JWT Required.'
+//         })
+//     }
 
-    if (req.body.userPin.length != 6) {
-        return res.status(400).json({
-            message: 'Bad Request.'
-        })
-    }
+//     if (req.body.userPin.length != 6) {
+//         return res.status(400).json({
+//             message: 'Bad Request.'
+//         })
+//     }
 
-    UserDB.find({ _id: decoded.id, userPin: req.body.userPin })
-        .exec()
-        .then(validation => {
-            if (validation) {
-                return res.status(409).json({
-                    message: 'Youre already create PIN.'
-                });
-            }
-            UserDB.update({ _id: decoded.id }, { userPin: req.body.userPin })
-                .exec()
-                .then(updated => {
-                    res.status(200).json({
-                        message: 'Success.'
-                    });
-                })
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({ error: "Internal Server Error." });
-        });
+//     UserDB.find({ _id: decoded.id, userPin: req.body.userPin })
+//         .exec()
+//         .then(validation => {
+//             if (validation) {
+//                 return res.status(409).json({
+//                     message: 'Youre already create PIN.'
+//                 });
+//             }
+//             UserDB.update({ _id: decoded.id }, { userPin: req.body.userPin })
+//                 .exec()
+//                 .then(updated => {
+//                     res.status(200).json({
+//                         message: 'Success.'
+//                     });
+//                 })
+//         })
+//         .catch(err => {
+//             console.log(err);
+//             res.status(500).json({ error: "Internal Server Error." });
+//         });
 
-}
+// }
 
 exports.validatePin = (req, res, next) => {
 
@@ -433,6 +441,8 @@ exports.validatePin = (req, res, next) => {
                     message: 'Wrong PIN.'
                 });
             }
+            UserDB.update({ _id: result[0]._id }, { pinCorrect: true })
+                .exec()
             res.status(200).json({
                 message: 'Success.'
             });
@@ -482,6 +492,8 @@ exports.changePin = (req, res, next) => {
             UserDB.update({ _id: decoded.id }, { userPin: req.body.newUserPin })
                 .exec()
                 .then(updated => {
+                    UserDB.update({ _id: result[0]._id }, { pinCorrect: false })
+                        .exec()
                     res.status(200).json({
                         message: 'Success.'
                     });
