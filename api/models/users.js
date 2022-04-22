@@ -6,7 +6,9 @@ const userSchema = mongoose.Schema({
     email: { type: String, required: true },
     password: { type: String, required: true },
     phoneNumber: { type: Number, required: true },
-    userPin: { type: Number }
+    userPin: { type: Number },
+    isVerified: {type: Boolean},
+    emailToken: {type: String}
 });
 
 module.exports = mongoose.model('UserDB', userSchema);

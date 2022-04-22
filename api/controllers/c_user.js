@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { passwordStrength } = require('check-password-strength')
+const crypto = require('crypto')
 
 const UserDB = require('../models/users');
-const { db } = require('../models/users');
+const emailVerification = require('../middleware/configEmail')
 
 // UserDB.find({}).select('email -_id')
 
@@ -47,14 +48,32 @@ exports.register = (req, res, next) => {
                             email: req.body.email.toLowerCase(),
                             password: hash,
                             phoneNumber: req.body.phoneNumber,
-                            userPin: ''
+                            userPin: '',
+                            isVerified: false,
+                            emailToken: crypto.randomBytes(64).toString('hex')
                         });
                         user
                             .save()
                             .then(result => {
-                                res.status(201).json({
-                                    message: 'User telah dibuat.',
-                                });
+                                var mailFormat = {
+                                    from: ' "Verify your email" <hokisaya999@gmail.com>',
+                                    to: result.email,
+                                    subject: "Verification Email QRLogku",
+                                    html: `<h2> Welcome ${result.name}! Thanks for Registering Account on QRLogku </h2>
+                                    <h4> Please verify your mail to login on QRLogku </h4>
+                                    <a href="http://${req.headers.host}/user/verifyEmail?token=${result.emailToken}">Click to Verify Your Email!</a>`
+                                }
+
+                                emailVerification.sendMail(mailFormat, function (error, info) {
+                                    if (error) {
+                                        console.log(error)
+                                    }
+                                    else {
+                                        res.status(201).json({
+                                            message: 'User telah dibuat, Please Verification your email.',
+                                        });
+                                    }
+                                })
                             })
                             .catch(err => {
                                 console.log(err);
@@ -64,6 +83,37 @@ exports.register = (req, res, next) => {
                             });
                     };
                 });
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: "Internal Server Error."
+            });
+        });
+
+}
+
+exports.verifyEmail = (req, res, next) => {
+
+    const token = req.query.token
+    const newUpdate = { emailToken: null, isVerified: true }
+
+    UserDB.find({ emailToken: token })
+        .then(user => {
+            if (user[0]) {
+                UserDB.update({ emailToken: token }, newUpdate)
+                    .exec()
+                    .then(result => {
+                        return res.status(200).json({
+                            message: "Your Account Successfully Verified , Please Login on Mobile Application QRLogku."
+                        })
+                    })
+            }
+            else {
+                return res.status(401).json({
+                    message: "Link Expired."
+                })
             }
         })
         .catch(err => {
